@@ -46,6 +46,7 @@ namespace PdfPageCounter
 
         private void CountFileAndPages(string folderPath)
         {
+
             if (!string.IsNullOrEmpty(folderPath))
             {
                 int pageCounter = 0;
