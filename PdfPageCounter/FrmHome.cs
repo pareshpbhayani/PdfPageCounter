@@ -39,6 +39,8 @@ namespace PdfPageCounter
                 lblProcessStatus.Visible = false;
                 txtTotalCount.Text = "Wait...";
                 progressBar1.Value = 0;
+                lblProcessStatus.Text = "Process completed!";
+                lblProcessStatus.ForeColor = Color.Green;
             }
             Thread pageCounterThread = new Thread(() => CountFileAndPages(txtFolderPath.Text));
             pageCounterThread.Start();
@@ -46,7 +48,6 @@ namespace PdfPageCounter
 
         private void CountFileAndPages(string folderPath)
         {
-
             if (!string.IsNullOrEmpty(folderPath))
             {
                 int pageCounter = 0;
@@ -106,36 +107,66 @@ namespace PdfPageCounter
                     foreach (var item in sortedFilesList)
                     {
                         processCounter++;
-                        using (PdfReader pdfReader = new PdfReader(item.FilePath))
+                        try
                         {
-                            pageCounter += pdfReader.NumberOfPages;
-                            stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FullFileName) + "\t>\t" + pdfReader.NumberOfPages);
+                            using (PdfReader pdfReader = new PdfReader(item.FilePath))
+                            {
+                                pageCounter += pdfReader.NumberOfPages;
+                                stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FullFileName) + "\t>\t" + pdfReader.NumberOfPages);
+                            }
+
+                            progressBar1.BeginInvoke(() =>
+                            {
+                                progressBar1.Value = (processCounter * 100 / fileCounter);
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message.ToString() + Environment.NewLine + item.FilePath, "PDF Page Counter", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            lblProcessStatus.BeginInvoke(() =>
+                            {
+                                lblProcessStatus.ForeColor = Color.Red;
+                                lblProcessStatus.Text = "Error! Operation breaked.";
+                            });
+                            break;
                         }
 
-                        progressBar1.BeginInvoke(() =>
-                        {
-                            progressBar1.Value = (processCounter * 100 / fileCounter);
-                        });
                     }
                     totalSortedFiles = processCounter;
                     totalSortedPages = pageCounter;
 
                     stramWriter.WriteLine("-------------- Unknown or Files with name --------------");
                     //Process unsorted files
+
                     foreach (var item in unsortedFilesList)
                     {
-                        processCounter++;
-                        using (PdfReader pdfReader = new PdfReader(item.FilePath))
+                        try
                         {
-                            pageCounter += pdfReader.NumberOfPages;
-                            stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FileName) + "\t>\t" + pdfReader.NumberOfPages);
-                        }
+                            processCounter++;
+                            using (PdfReader pdfReader = new PdfReader(item.FilePath))
+                            {
+                                pageCounter += pdfReader.NumberOfPages;
+                                stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FileName) + "\t>\t" + pdfReader.NumberOfPages);
+                            }
 
-                        progressBar1.BeginInvoke(() =>
+                            progressBar1.BeginInvoke(() =>
+                            {
+                                progressBar1.Value = (processCounter * 100 / fileCounter);
+                            });
+                        }
+                        catch (Exception ex)
                         {
-                            progressBar1.Value = (processCounter * 100 / fileCounter);
-                        });
+                            MessageBox.Show(ex.Message.ToString() + Environment.NewLine + item.FilePath, "PDF Page Counter", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            lblProcessStatus.BeginInvoke(() =>
+                            {
+                                lblProcessStatus.ForeColor = Color.Red;
+                                lblProcessStatus.Text = "Error! Operation breaked.";
+                            });
+                            break;
+                        }
                     }
+
+
                     totalUnsortedFiles = processCounter - totalSortedFiles;
                     totalUnsortedPages = pageCounter - totalSortedPages;
                     stramWriter.WriteLine("-------------- -------------- --------------");
@@ -155,7 +186,7 @@ namespace PdfPageCounter
                     lblProcessStatus.Visible = true;
                 });
 
-                Process.Start("notepad.exe",filePath);
+                Process.Start("notepad.exe", filePath);
             }
         }
     }
