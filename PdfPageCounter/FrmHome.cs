@@ -1,6 +1,7 @@
 using iTextSharp.text.pdf;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 
 namespace PdfPageCounter
 {
@@ -93,6 +94,9 @@ namespace PdfPageCounter
                 sortedFilesList = sortedFilesList.OrderBy(o => o.FileName).ToList();
 
                 string filePath = "Scan Report.txt";
+                string filePath2 = "Missing Report.txt";
+
+                StringBuilder missingReportBuilder = new StringBuilder();
 
                 File.Create(filePath).Close();
 
@@ -104,6 +108,8 @@ namespace PdfPageCounter
                     int totalUnsortedPages = 0;
                     stramWriter.WriteLine("-------------- Files with number --------------");
                     //Process sorted files
+                    int previousFileNumber = 0;
+                    int totalMissingCount = 0;
                     foreach (var item in sortedFilesList)
                     {
                         processCounter++;
@@ -113,6 +119,18 @@ namespace PdfPageCounter
                             {
                                 pageCounter += pdfReader.NumberOfPages;
                                 stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FullFileName) + "\t>\t" + pdfReader.NumberOfPages);
+                            }
+
+                            if (chkCountMissing.Checked)
+                            {
+                                int missingCount = item.FileName - previousFileNumber;
+                                if (missingCount > 1)
+                                {
+                                    totalMissingCount += (missingCount - 1);
+                                    missingReportBuilder.AppendLine(string.Format("{0, -20}", previousFileNumber + 1) + " to " + string.Format("{0, -20}", item.FileName - 1) + " = " + string.Format("{0, -5}", missingCount - 1));
+                                }
+
+                                previousFileNumber = item.FileName;
                             }
 
                             progressBar1.BeginInvoke(() =>
@@ -132,6 +150,18 @@ namespace PdfPageCounter
                         }
 
                     }
+                    if (chkCountMissing.Checked)
+                    {
+                        File.Create(filePath2).Close();
+                        using (StreamWriter stramWriter2 = File.AppendText(filePath2))
+                        {
+                            stramWriter2.WriteLine(missingReportBuilder.ToString());
+                            stramWriter2.WriteLine("----------------------------");
+                            stramWriter2.WriteLine($"Total Missing = {totalMissingCount}");
+                            stramWriter2.Close();
+                        }
+                    }
+
                     totalSortedFiles = processCounter;
                     totalSortedPages = pageCounter;
 
@@ -187,6 +217,10 @@ namespace PdfPageCounter
                 });
 
                 Process.Start("notepad.exe", filePath);
+                if (chkCountMissing.Checked)
+                {
+                    Process.Start("notepad.exe", filePath2);
+                }
             }
         }
     }

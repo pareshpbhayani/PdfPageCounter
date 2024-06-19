@@ -35,6 +35,7 @@
             progressBar1 = new ProgressBar();
             lblProcessStatus = new Label();
             label1 = new Label();
+            chkCountMissing = new CheckBox();
             SuspendLayout();
             // 
             // btnBrowse
@@ -95,11 +96,22 @@
             label1.Text = "Counts ony PDFs.";
             label1.Visible = false;
             // 
+            // chkCountMissing
+            // 
+            chkCountMissing.AutoSize = true;
+            chkCountMissing.Location = new Point(12, 45);
+            chkCountMissing.Name = "chkCountMissing";
+            chkCountMissing.Size = new Size(123, 23);
+            chkCountMissing.TabIndex = 4;
+            chkCountMissing.Text = "Count Missing?";
+            chkCountMissing.UseVisualStyleBackColor = true;
+            // 
             // FrmHome
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(500, 171);
+            Controls.Add(chkCountMissing);
             Controls.Add(label1);
             Controls.Add(lblProcessStatus);
             Controls.Add(progressBar1);
@@ -123,5 +135,6 @@
         private ProgressBar progressBar1;
         private Label lblProcessStatus;
         private Label label1;
+        private CheckBox chkCountMissing;
     }
 }
