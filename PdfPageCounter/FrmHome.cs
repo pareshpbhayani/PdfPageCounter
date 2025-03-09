@@ -118,7 +118,7 @@ namespace PdfPageCounter
                             using (PdfReader pdfReader = new PdfReader(item.FilePath))
                             {
                                 pageCounter += pdfReader.NumberOfPages;
-                                stramWriter.WriteLine(string.Format("{0, -4}", processCounter) + string.Format("{0, -60}", item.FullFileName) + "\t>\t" + pdfReader.NumberOfPages);
+                                stramWriter.WriteLine(string.Format("{0, -5}", processCounter) + string.Format("{0, -60}", item.FullFileName) + "\t>\t" + pdfReader.NumberOfPages);
                             }
 
                             if (chkCountMissing.Checked)
